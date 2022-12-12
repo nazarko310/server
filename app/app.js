@@ -1,16 +1,21 @@
 const express = require('express');
-const {static} = require("express");
+const expressHbs = require('express-handlebars');
 const cors = require('cors')
 
 const {PORT} = require('./config/variables');
 const app = express();
 
-const {userRouter, authRouter} = require('./routers')
-const bodyParser = require("express");
+const {userRouter} = require('./routers')
+const path = require("path");
 
-app.use(bodyParser.urlencoded({ extended: false }))
-app.use(bodyParser.json())
+
 app.use(cors())
+app.use(express.json());
+app.use(express.urlencoded({extended: true}));
+
+app.set('view engine', '.hbs');
+app.engine('.hbs', expressHbs({defaultLayout: false}));
+
 
 
 app.get('/ping', (req, res) => {res.json('Pong')})

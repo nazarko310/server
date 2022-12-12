@@ -7,5 +7,10 @@
     "simple-json-db": "^2.0.0",
     "uuid": "^9.0.0",
     "uuidv4": "^6.2.13"
+  },
+  "devDependencies": {
+    "body-parser": "^1.20.1",
+    "ejs": "^3.1.8",
+    "express-handlebars": "^5.3.3"
   }
 }
