@@ -1,11 +1,48 @@
 const {v4: uuidv4} = require('uuid');
 
-const usersFromFile = require('../db/db');
+const usersFromFile = require('../db/db-user');
+const calendarDateFromFile = require('../db/db-calendar');
 const fs = require("fs");
 const path = require("path");
+
 const users = JSON.parse(JSON.stringify(usersFromFile));
+const calendars = JSON.parse(JSON.stringify(calendarDateFromFile));
 
 module.exports = {
+
+    getPlannedVacations: (req, res) => {
+        const arrayFromCalendars = Object.keys(calendars).map(key => calendars[key])
+        res.send(arrayFromCalendars)
+    },
+
+    getCalendarData: (req, res) => {
+        const {startVacation, endVacation, userIsLogin} = req.body;
+        const id = uuidv4();
+        const isCalendarExist = calendars.some(calendar => calendar.userIsLogin === userIsLogin);
+        const status = 'register';
+
+        if (!startVacation || !endVacation) {
+            res.status(400).send({massage: 'fill in all fields'});
+            return;
+        }
+        if (isCalendarExist) {
+            res.status(416).send({massage: 'Vacation is already register'});
+            return;
+        }
+
+        calendars.push({id, userIsLogin, startVacation, endVacation, status});
+        fs.writeFile(path.join(__dirname, '../db', 'db-calendar.js'), `module.exports = ${JSON.stringify(calendars)}`,
+            err => {
+                console.log(err);
+            });
+
+        res.status(200).send({massage: 'Vacation is register'});
+    },
+
+    getUsers: (req, res) => {
+        const arrayFromTodosObj = Object.keys(users).map(key => users[key])
+        res.send(arrayFromTodosObj)
+    },
 
     loginUser: (req, res) => {
         const {email, password} = req.body;
@@ -18,10 +55,9 @@ module.exports = {
         res.status(404).send({massage: 'Password or email is incorrect'});
     },
 
-
     registerUser: (req, res) => {
 
-        const {email, password, userName} = req.body;
+        const {email, password, userName, secondName, department, position} = req.body;
         const id = uuidv4();
         const isUserExist = users.some(user => user.email === email);
 
@@ -34,8 +70,8 @@ module.exports = {
             return;
         }
 
-        users.push({id, email, password, userName});
-        fs.writeFile(path.join(__dirname, '../db', 'db.js'), `module.exports = ${JSON.stringify(users)}`,
+        users.push({id, email, password, userName, secondName, department, position});
+        fs.writeFile(path.join(__dirname, '../db', 'db-user.js'), `module.exports = ${JSON.stringify(users)}`,
             err => {
                 console.log(err);
             });
