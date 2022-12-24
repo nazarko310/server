@@ -5,10 +5,33 @@ const calendarDateFromFile = require('../db/db-calendar');
 const fs = require("fs");
 const path = require("path");
 
+
 const users = JSON.parse(JSON.stringify(usersFromFile));
 const calendars = JSON.parse(JSON.stringify(calendarDateFromFile));
 
 module.exports = {
+
+    patchPlannedVacation: (req, res) => {
+        const {id} = req.body;
+        const idCalendar = calendars.map(value => value.id)
+        const {statusVacation} = req.body;
+
+
+        const newCalendar = calendars.map((calendar) => (
+            idCalendar.toString() === id.toString()
+                ? {...calendar, statusVacation: statusVacation}
+                : calendar.statusVacation
+        ));
+
+        fs.writeFile(path.join(__dirname, '../db', 'db-calendar.js'), `module.exports = ${JSON.stringify(newCalendar)}`,
+            err => {
+                console.log(err);
+            });
+
+
+        res.status(200).send('Vacation approve');
+
+    },
 
     getPlannedVacations: (req, res) => {
         const arrayFromCalendars = Object.keys(calendars).map(key => calendars[key])
@@ -19,7 +42,7 @@ module.exports = {
         const {startVacation, endVacation, userIsLogin} = req.body;
         const id = uuidv4();
         const isCalendarExist = calendars.some(calendar => calendar.userIsLogin === userIsLogin);
-        const status = 'register';
+        const statusVacation = 'register';
 
         if (!startVacation || !endVacation) {
             res.status(400).send({massage: 'fill in all fields'});
@@ -30,7 +53,7 @@ module.exports = {
             return;
         }
 
-        calendars.push({id, userIsLogin, startVacation, endVacation, status});
+        calendars.push({id, userIsLogin, startVacation, endVacation, statusVacation});
         fs.writeFile(path.join(__dirname, '../db', 'db-calendar.js'), `module.exports = ${JSON.stringify(calendars)}`,
             err => {
                 console.log(err);
